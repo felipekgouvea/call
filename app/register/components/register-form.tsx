@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from '@/app/_components/ui/form'
 import { Input } from '@/app/_components/ui/input'
+import { api } from '@/app/_lib/axios'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MoveRightIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
@@ -47,7 +48,14 @@ export default function RegisterForm() {
   }, [params, form])
 
   async function handleRegister(data: RegisterFormSchema) {
-    console.log({ data })
+    try {
+      await api.post('/users', {
+        name: data.name,
+        username: data.username,
+      })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
