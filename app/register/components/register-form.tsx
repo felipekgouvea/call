@@ -12,10 +12,12 @@ import {
 import { Input } from '@/app/_components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MoveRightIcon } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-const formSchema = z.object({
+const registerFormSchema = z.object({
   username: z
     .string()
     .min(3, {
@@ -29,20 +31,28 @@ const formSchema = z.object({
   }),
 })
 
-type FormSchema = z.infer<typeof formSchema>
+type RegisterFormSchema = z.infer<typeof registerFormSchema>
 
 export default function RegisterForm() {
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<RegisterFormSchema>({
+    resolver: zodResolver(registerFormSchema),
   })
 
-  function onSubmit(data: FormSchema) {
+  const params = useSearchParams()
+
+  useEffect(() => {
+    if (params.get('username')) {
+      form.setValue('username', String(params.get('username')))
+    }
+  }, [params, form])
+
+  async function handleRegister(data: RegisterFormSchema) {
     console.log({ data })
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
         <FormField
           control={form.control}
           name="username"

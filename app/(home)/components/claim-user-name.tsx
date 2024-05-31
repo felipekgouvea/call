@@ -10,11 +10,12 @@ import {
 } from '@/app/_components/ui/form'
 import { Input } from '@/app/_components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { MoveRight } from 'lucide-react'
+import { Loader2, MoveRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-const formSchema = z.object({
+const claimUserNameFormSchema = z.object({
   username: z
     .string()
     .min(3, {
@@ -24,20 +25,27 @@ const formSchema = z.object({
     .transform((username) => username.toLowerCase()),
 })
 
-type FormSchema = z.infer<typeof formSchema>
+type ClaimUserNameFormData = z.infer<typeof claimUserNameFormSchema>
 
 function ClaimUserName() {
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ClaimUserNameFormData>({
+    resolver: zodResolver(claimUserNameFormSchema),
   })
 
-  function onSubmit(data: FormSchema) {
-    console.log({ data })
+  const router = useRouter()
+
+  async function handleClaimUserName(data: ClaimUserNameFormData) {
+    const { username } = data
+
+    await router.push(`/register?username=${username}`)
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+      <form
+        onSubmit={form.handleSubmit(handleClaimUserName)}
+        className="flex gap-2"
+      >
         <FormField
           control={form.control}
           name="username"
@@ -55,7 +63,14 @@ function ClaimUserName() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="flex gap-2 font-normal">
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          className="flex gap-2 font-normal"
+        >
+          {form.formState.isSubmitting && (
+            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+          )}
           Reservar
           <MoveRight size={16} />
         </Button>
