@@ -12,6 +12,7 @@ import {
 import { Input } from '@/app/_components/ui/input'
 import { api } from '@/app/_lib/axios'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { AxiosError } from 'axios'
 import { MoveRightIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -54,7 +55,9 @@ export default function RegisterForm() {
         username: data.username,
       })
     } catch (error) {
-      console.log(error)
+      if (error instanceof AxiosError && error?.response?.data?.message) {
+        alert(error.response.data.message)
+      }
     }
   }
 
