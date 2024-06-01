@@ -14,7 +14,7 @@ import { api } from '@/app/_lib/axios'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
 import { MoveRightIcon } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -41,6 +41,7 @@ export default function RegisterForm() {
   })
 
   const params = useSearchParams()
+  const route = useRouter()
 
   useEffect(() => {
     if (params.get('username')) {
@@ -54,6 +55,8 @@ export default function RegisterForm() {
         name: data.name,
         username: data.username,
       })
+
+      await route.push('/register/connect-calendar')
     } catch (error) {
       if (error instanceof AxiosError && error?.response?.data?.message) {
         alert(error.response.data.message)
