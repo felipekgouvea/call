@@ -1,28 +1,58 @@
-import { PrismaAdapter } from '@auth/prisma-adapter'
-import { AuthOptions } from 'next-auth'
-import { Adapter } from 'next-auth/adapters'
-import GoogleProvider from 'next-auth/providers/google'
+import { NextApiRequest, NextApiResponse, NextPageContext } from 'next'
+import NextAuth, { NextAuthOptions } from 'next-auth'
+import GoogleProvider, { GoogleProfile } from 'next-auth/providers/google'
+import { PrismaAdapter } from './auth/prisma-adapeter'
 
-import { prisma } from '@/app/_lib/prisma'
+export function buildNextAuthOptions(
+  req: NextApiRequest | NextPageContext['req'],
+  res: NextApiResponse | NextPageContext['res'],
+): NextAuthOptions {
+  return {
+    adapter: PrismaAdapter(req, res),
+    providers: [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+        authorization: {
+          params: {
+            prompt: 'consent',
+            access_type: 'offline',
+            response_type: 'code',
+            scope:
+              'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar',
+          },
+        },
+        profile(profile: GoogleProfile) {
+          return {
+            id: profile.sub,
+            name: profile.name,
+            username: '',
+            email: profile.email,
+            avatar_url: profile.picture,
+          }
+        },
+      }),
+    ],
+    callbacks: {
+      async signIn({ account }) {
+        if (
+          !account?.scope?.includes('https://www.googleapis.com/auth/calendar')
+        ) {
+          return '/register/connect-calendar?error=permissions'
+        }
 
-export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma) as Adapter,
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
-  callbacks: {
-    async session({ session, user }) {
-      session.user = { ...session.user, id: user.id } as {
-        id: string
-        name: string
-        email: string
-      }
-
-      return session
+        return true
+      },
+      async session({ session, user }) {
+        return {
+          ...session,
+          user,
+        }
+      },
     },
-  },
-  secret: process.env.NEXT_AUTH_SECRET,
+  }
+}
+
+export default async function auth(req: NextApiRequest, res: NextApiResponse) {
+  return NextAuth(req, res, buildNextAuthOptions(req, res))
 }
