@@ -1,18 +1,15 @@
-import { NextApiRequest, NextApiResponse, NextPageContext } from 'next'
+import { PrismaAdapter } from '@/app/_lib/auth/prisma-adapter'
+import { NextApiRequest, NextApiResponse } from 'next'
 import NextAuth, { NextAuthOptions } from 'next-auth'
 import GoogleProvider, { GoogleProfile } from 'next-auth/providers/google'
-import { PrismaAdapter } from './auth/prisma-adapeter'
 
-export function buildNextAuthOptions(
-  req: NextApiRequest | NextPageContext['req'],
-  res: NextApiResponse | NextPageContext['res'],
-): NextAuthOptions {
+export function buildNextAuthOptions(): NextAuthOptions {
   return {
-    adapter: PrismaAdapter(req, res),
+    adapter: PrismaAdapter(),
     providers: [
       GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         authorization: {
           params: {
             prompt: 'consent',
@@ -54,5 +51,5 @@ export function buildNextAuthOptions(
 }
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
-  return NextAuth(req, res, buildNextAuthOptions(req, res))
+  return NextAuth(req, res, buildNextAuthOptions())
 }

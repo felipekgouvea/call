@@ -66,7 +66,11 @@ export default function RegisterForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(handleRegister)}
+        method="POST"
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="username"

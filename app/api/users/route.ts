@@ -1,39 +1,34 @@
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/_lib/prisma'
 import { serialize } from 'cookie'
-import { NextResponse } from 'next/server'
 
-export async function POST(request: Request) {
-  try {
-    const { name, username } = await request.json()
+export async function POST(request: NextRequest) {
+  const { name, username } = await request.json()
 
-    const userExists = await prisma.user.findUnique({
-      where: {
-        username,
-      },
-    })
+  const userExists = await prisma.user.findUnique({
+    where: { username },
+  })
 
-    if (userExists) {
-      return NextResponse.json(
-        { message: 'Username already taken.' },
-        { status: 400 },
-      )
-    }
-
-    const newUser = await prisma.user.create({ data: { name, username } })
-
-    const cookie = serialize('username', username, {
-      maxAge: 30 * 24 * 60 * 60,
-      path: '/',
-    })
-
-    const response = NextResponse.json(newUser, { status: 201 })
-    response.headers.append('Set-Cookie', cookie)
-
-    return response
-  } catch (error) {
+  if (userExists) {
     return NextResponse.json(
-      { error: 'Failed to create user' },
-      { status: 500 },
+      { message: 'Username already taken.' },
+      { status: 400 },
     )
   }
+
+  const user = await prisma.user.create({
+    data: { name, username },
+  })
+
+  // Serializa o cookie
+  const cookie = serialize('@call:userId', user.id, {
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    path: '/',
+  })
+
+  // Cria uma nova resposta e define o cabeçalho Set-Cookie
+  const response = NextResponse.json(user, { status: 201 })
+  response.headers.set('Set-Cookie', cookie)
+
+  return response
 }

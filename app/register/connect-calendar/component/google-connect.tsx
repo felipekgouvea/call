@@ -2,13 +2,21 @@
 
 import { Button } from '@/app/_components/ui/button'
 import { Card, CardContent } from '@/app/_components/ui/card'
-import { MoveRightIcon } from 'lucide-react'
-import { signIn } from 'next-auth/react'
+import { CheckCheckIcon, MoveRightIcon } from 'lucide-react'
+import { signIn, useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 
 function GoogleConnect() {
-  function handleSingInClick() {
-    signIn('google')
+  const session = useSession()
+  const params = useSearchParams()
+
+  const isSigndeIn = session.status === 'authenticated'
+
+  async function handleSingInClick() {
+    await signIn('google')
   }
+
+  console.log(session)
 
   return (
     <div className="space-y-4">
@@ -16,18 +24,45 @@ function GoogleConnect() {
         <CardContent className="p-0">
           <div className="flex items-center justify-between p-4">
             <span>Google Calendário</span>
-            <Button
-              variant="link"
-              className="gap-2 border-2 border-primary font-semibold"
-              onClick={handleSingInClick}
-            >
-              Conectar
-              <MoveRightIcon size={16} />
-            </Button>
+            {isSigndeIn ? (
+              <Button
+                variant="link"
+                className="gap-2 border-2 border-primary font-semibold"
+                onClick={handleSingInClick}
+                disabled
+              >
+                Conectado
+                <CheckCheckIcon size={16} />
+              </Button>
+            ) : (
+              <Button
+                variant="link"
+                className="gap-2 border-2 border-primary font-semibold transition-colors duration-500 hover:bg-primary hover:text-white"
+                onClick={handleSingInClick}
+              >
+                Conectar
+                <MoveRightIcon size={16} />
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
-      <Button className="h-11 w-full gap-2">
+      {params.get('error') === 'permissions' ? (
+        <p className="w-full text-[0.8rem] font-medium text-destructive">
+          Falha ao conectar ao Google, verifique se você habilitou as permissões
+          de acesso ao Google Calendar.
+        </p>
+      ) : (
+        ''
+      )}
+      <Button
+        disabled={!isSigndeIn}
+        className={
+          !isSigndeIn
+            ? `h-11 w-full gap-2 bg-gray-200 text-primary`
+            : `h-11 w-full gap-2`
+        }
+      >
         Próximo passo <MoveRightIcon size={16} />
       </Button>
     </div>
