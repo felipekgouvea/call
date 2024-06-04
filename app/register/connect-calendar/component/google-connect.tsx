@@ -4,19 +4,18 @@ import { Button } from '@/app/_components/ui/button'
 import { Card, CardContent } from '@/app/_components/ui/card'
 import { CheckCheckIcon, MoveRightIcon } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 function GoogleConnect() {
   const session = useSession()
   const params = useSearchParams()
+  const router = useRouter()
 
   const isSigndeIn = session.status === 'authenticated'
 
   async function handleSingInClick() {
     await signIn('google')
   }
-
-  console.log(session)
 
   return (
     <div className="space-y-4">
@@ -57,6 +56,9 @@ function GoogleConnect() {
       )}
       <Button
         disabled={!isSigndeIn}
+        onClick={() => {
+          router.push('/register/time-intervals')
+        }}
         className={
           !isSigndeIn
             ? `h-11 w-full gap-2 bg-gray-200 text-primary`

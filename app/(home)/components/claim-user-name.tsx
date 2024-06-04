@@ -46,23 +46,24 @@ function ClaimUserName() {
         onSubmit={form.handleSubmit(handleClaimUserName)}
         className="flex gap-2"
       >
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  placeholder="seu-usuário"
-                  prefix="call.com/"
-                  className="flex-1"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="w-full">
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    placeholder="seu-usuário"
+                    prefix="call.com/"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <Button
           type="submit"
           disabled={form.formState.isSubmitting}
